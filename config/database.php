@@ -6,10 +6,18 @@ $user = 'root';
 $pass = '';
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Dispara exceções em erros
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Retorna dados num array associativo
+        PDO::ATTR_EMULATE_PREPARES   => false,                  // Conexão segura: desabilita prepares emulados
+    ];
+
+    $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4";
+    $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
-    die("Erro de conexão com o banco de dados: " . $e->getMessage());
+    // Salva o erro real em um log no servidor (evita exposição de dados sensíveis na tela)
+    error_log("Connection failed: " . $e->getMessage());
+
+    // Retorna mensagem amigável e encerra o fluxo
+    die("Ocorreu um erro de comunicação com o sistema. Por favor, tente novamente mais tarde.");
 }
-?>
